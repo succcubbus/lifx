@@ -50,9 +50,22 @@ defmodule LifxTest do
     assert Protocol.parse_packet(bin) == @discovery_packet
   end
 
+  defmodule Handler do
+    use GenServer
+
+    def init(args) do
+      {:ok, args}
+    end
+
+    def handle_cast(%Device{} = device, parent) do
+      send(parent, device)
+      {:noreply, parent}
+    end
+  end
+
   test "Client event handler" do
     Lifx.Client.start()
-    Lifx.Client.add_handler(Lifx.Handler)
+    Lifx.Client.add_handler(LifxTest.Handler)
     assert_receive(%Device{}, 10000)
   end
 end
