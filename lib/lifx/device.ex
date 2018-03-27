@@ -3,7 +3,7 @@ defmodule Lifx.Device do
   use Lifx.Protocol.Types
   require Logger
   alias Lifx.Protocol.{FrameHeader, FrameAddress, ProtocolHeader}
-  alias Lifx.Protocol.{Device, Packet}
+  alias Lifx.Protocol.Packet
   alias Lifx.Protocol.{HSBK, Group, Location}
   alias Lifx.Protocol
   alias Lifx.Client
@@ -47,7 +47,7 @@ defmodule Lifx.Device do
   end
 
   def init(%State{} = device) do
-    Process.send_after(self, :state, 100)
+    Process.send_after(self(), :state, 100)
     {:ok, device}
   end
 

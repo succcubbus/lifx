@@ -65,6 +65,11 @@ defmodule Lifx.Client do
     {:ok, %State{:source => source, :events => events}}
   end
 
+  def handle_cast({:handler, handler, pid}, state) do
+    Supervisor.start_child(state.events, [handler, pid])
+    {:noreply, %{state | :handlers => [{handler, pid} | state.handlers]}}
+  end
+
   def handle_call(:start, _from, state) do
     udp_options = [
       :binary,
@@ -118,16 +123,11 @@ defmodule Lifx.Client do
     {:reply, :ok, state}
   end
 
-  def handle_cast({:handler, handler, pid}, state) do
-    Supervisor.start_child(state.events, [handler, pid])
-    {:noreply, %{state | :handlers => [{handler, pid} | state.handlers]}}
-  end
-
   def handle_call(:devices, _from, state) do
     {:reply, state.devices, state}
   end
 
-  def handle_info({:gen_event_EXIT, handler, reason}, state) do
+  def handle_info({:gen_event_EXIT, _handler, _reason}, state) do
     Enum.each(state.handlers, fn h ->
       Supervisor.start_child(state.events, [elem(h, 0), elem(h, 1)])
     end)
@@ -171,7 +171,7 @@ defmodule Lifx.Client do
   def handle_packet(
         %Packet{:protocol_header => %ProtocolHeader{:type => @stateservice}} = packet,
         ip,
-        state
+        _state
       ) do
     d = %Device{
       :id => packet.frame_address.target,
