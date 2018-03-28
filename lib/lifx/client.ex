@@ -58,8 +58,10 @@ defmodule Lifx.Client do
     # event handler
     import Supervisor.Spec
     child = worker(GenServer, [], restart: :temporary)
+
     {:ok, events} =
       Supervisor.start_link([child], strategy: :simple_one_for_one, name: Lifx.Client.Events)
+
     add_handler(Lifx.Handler)
 
     {:ok, %State{:source => source, :events => events}}
@@ -148,21 +150,10 @@ defmodule Lifx.Client do
 
   def handle_info(%Device{} = device, state) do
     new_state =
-      cond do
-        Enum.any?(state.devices, fn dev -> dev.id == device.id end) ->
-          %State{
-            state
-            | :devices =>
-                Enum.map(state.devices, fn d ->
-                  cond do
-                    device.id == d.id -> device
-                    true -> d
-                  end
-                end)
-          }
-
-        true ->
-          %State{state | :devices => [device | state.devices]}
+      if Enum.any?(state.devices, &(&1.id == device.id)) do
+        put_in(state, [:devices, Access.filter(&(&1.id == device.id))], device)
+      else
+        %State{state | :devices => [device | state.devices]}
       end
 
     {:noreply, new_state}
