@@ -153,7 +153,9 @@ defmodule Lifx.Client do
       if Enum.any?(state.devices, &(&1.id == device.id)) do
         %State{
           state
-          | devices: put_in(state.devices, [Access.filter(&(&1.id == device.id))], device)
+          | devices: Enum.map(state.devices, fn d ->
+            if d.id == device.id, do: device, else: d
+          end)
         }
       else
         %State{state | :devices => [device | state.devices]}

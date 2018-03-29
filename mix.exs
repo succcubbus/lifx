@@ -5,7 +5,7 @@ defmodule Lifx.Mixfile do
     [
       app: :lifx,
       version: "0.1.7",
-      elixir: "~> 1.3",
+      elixir: "~> 1.5",
       build_embedded: Mix.env() == :prod,
       start_permanent: Mix.env() == :prod,
       description: description(),
