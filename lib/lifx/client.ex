@@ -151,7 +151,10 @@ defmodule Lifx.Client do
   def handle_info(%Device{} = device, state) do
     new_state =
       if Enum.any?(state.devices, &(&1.id == device.id)) do
-        put_in(state, [:devices, Access.filter(&(&1.id == device.id))], device)
+        %State{
+          state
+          | devices: put_in(state.devices, [Access.filter(&(&1.id == device.id))], device)
+        }
       else
         %State{state | :devices => [device | state.devices]}
       end
