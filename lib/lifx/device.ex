@@ -119,6 +119,8 @@ defmodule Lifx.Device do
         }
         payload = Protocol.level(power)
         Client.send(state, packet, payload)
+        state = %{ state | power: power }
+        Process.send(Lifx.Client, state, [])
         {:noreply, state}
     end
 
